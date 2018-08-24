@@ -1,62 +1,64 @@
 #!/bin/bash
-Res="\e[0m"
+Res="[0m"
 
-Default="\e[39m"
-Black="\e[30m"
-Red="\e[31m"
-Green="\e[32m"
-Yellow="\e[33m"
-Blue="\e[34m"
-Magenta="\e[35m"
-Cyan="\e[36m"
-Lgray="\e[37m"
-Dgray="\e[90m"
-Lred="\e[91m"
-Lgreen="\e[92m"
-Lyellow="\e[93m"
-Lblue="\e[94m"
-Lmagenta="\e[95m"
-Lcyan="\e[96m"
-White="\e[97m"
-BDefault="\e[49m"
-BBlack="\e[40m"
-BRed="\e[41m"
-BGreen="\e[42m"
-BYellow="\e[43m"
-BBlue="\e[44m"
-BMagenta="\e[45m"
-BCyan="\e[46m"
-BLgray="\e[47m"
-BDgray="\e[100m"
-BLred="\e[101m"
-BLgreen="\e[102m"
-BLyellow="\e[103m"
-BLblue="\e[104m"
-BLmagenta="\e[105m"
-BLcyan="\e[106m"
-BWhite="\e[107m"
-Bold="\e[1m"
-Dim="\e[2m"
-Underlined="\e[4m"
-Blink="\e[5m"
-Inverted="\e[7m"
-Hidden="\e[8m"
+Default="[39m"
+Black="[30m"
+Red="[31m"
+Green="[32m"
+Yellow="[33m"
+Blue="[34m"
+Magenta="[35m"
+Cyan="[36m"
+Lgray="[37m"
+Dgray="[90m"
+Lred="[91m"
+Lgreen="[92m"
+Lyellow="[93m"
+Lblue="[94m"
+Lmagenta="[95m"
+Lcyan="[96m"
+White="[97m"
+BDefault="[49m"
+BBlack="[40m"
+BRed="[41m"
+BGreen="[42m"
+BYellow="[43m"
+BBlue="[44m"
+BMagenta="[45m"
+BCyan="[46m"
+BLgray="[47m"
+BDgray="[100m"
+BLred="[101m"
+BLgreen="[102m"
+BLyellow="[103m"
+BLblue="[104m"
+BLmagenta="[105m"
+BLcyan="[106m"
+BWhite="[107m"
+Bold="[1m"
+Dim="[2m"
+Underlined="[4m"
+Blink="[5m"
+Inverted="[7m"
+Hidden="[8m"
 
-colors="\e[31m
-\e[32m
-\e[33m
-\e[34m
-\e[35m
-\e[36m
-\e[37m
-\e[90m
-\e[91m
-\e[92m
-\e[93m
-\e[94m
-\e[95m
-\e[96m
-\e[97m"
+colors="[31m
+[32m
+[33m
+[34m
+[35m
+[36m
+[37m
+[90m
+[91m
+[92m
+[93m
+[94m
+[95m
+[96m
+[97m"
+
+esc=$(printf '\033')
 
 P=$(pwd)
 IMG_PTH=$P'/img/'
@@ -100,11 +102,11 @@ function failedlogs {
   nb_failed=$(( $(sudo lastb -s $lastlog|wc -l) -2))
 
   if [[ $nb_failed -gt 0 ]];then
-    nb_failed="$Red$nb_failed"
+    nb_failed="${esc}$Red$nb_failed"
   else
-    nb_failed="$Green$nb_failed"
+    nb_failed="${esc}$Green$nb_failed"
   fi
-  echo "$Bold$nb_failed$Res"
+  echo "${esc}$Bold$nb_failed${esc}$Res"
 }
 
 function escapediff {
@@ -155,7 +157,7 @@ failed="There were $b failed login attempts since last login"
 
 if [ -z $1 ];then
   greet=$(shuf -n1 $MSG_FILE)
-  greet="$(figlet -d $FONT_DIR -f $gfont -w $(($COLUMNS-9)) "$greet" | sed "s=^=$gcolor=g"|sed 's=$=\\e[0m=g')"
+  greet="$(figlet -d $FONT_DIR -f $gfont -w $(($COLUMNS-9)) "$greet" | sed "s=^=${esc}$gcolor=g"|sed 's=$=\\e[0m=g')"
 
   infos="\
   #$(uname -snrvm|fold -w $(($COLUMNS-9)) )
@@ -184,6 +186,20 @@ chosen_img=${IMG_PTH}${img_arr[$(($RANDOM%$img_cnt))]}
 
 ascii_h=$(( $LINES-$msg_h ))
 ascii=$(jp2a --height=$ascii_h $chosen_img)
+ascii_w=$(echo "$ascii"|head -1|wc -c)
+if [ $ascii_w -gt $COLUMNS ];then
+  ascii=$(jp2a --width=$COLUMNS $chosen_img)
+  ascii_lh=$(echo "$ascii"|wc -l)
+  if [ $ascii_lh -lt $ascii_h ];then
+    #echo "$ascii_lh $ascii_h"
+    n=$(( ($ascii_h-$ascii_lh)/2+1 ))
+    lines="$(for i in $(seq $n); do echo  '\n';done)"
+    #echo "$lines"|wc -l
+    #echo "$ascii"|wc -l
+    ascii="${ascii}"
+    #echo "$ascii"|wc -l
+  fi
+fi
 echo "$ascii"|sed '/^\s*$/d' >> "$COW_FILE"
 
 
@@ -211,7 +227,9 @@ do
 done
 IFS=" "
 
-echo -e "$final"
+over="$Green"
+echo -e "$final$lines"
+#|sed "s=\([|/\\]$\)=${esc}${Bold}${esc}$gcolor\1"${esc}$Res"=g"|sed "s=^\([|/\\]\)=${esc}$Bold${esc}${gcolor}\1${esc}$Res=g"|sed "s=\(^ -*$\)=${esc}$Bold${esc}${gcolor}\1${esc}$Res=g"|sed "s=\(^ _*$\)=${esc}$Bold${esc}${gcolor}\1${esc}$Res=g"
 
 #echo -n "$(echo -n "$msg_f"|cowsay -f greeter -n)"
 
