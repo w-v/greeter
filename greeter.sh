@@ -127,6 +127,19 @@ function hw {
   echo '\n'
   paste <(cpu) <(hdd) --delimiters ''
 }
+
+function addthoughts {
+
+  for i in $(seq $1 -1 1);do
+    char=$(echo "$ascii"|head -$i|tail -1| cut -c $i)
+    if [[ "$char" = " " ]];then
+      ascii=$(echo "$ascii"|sed -e "${i}s/ /\$thoughts/${i}")
+    fi
+  done
+
+}
+
+
 gcolor=$(echo -e "$colors"|shuf -n1)
 gfont=$( ls $FONT_DIR| shuf -n1)
 
@@ -146,35 +159,34 @@ else
 fi
 
 echo $header > "$COW_FILE"
-echo "
- $thought
-  $thought
-   $thought
-    $thought" >> "$COW_FILE"
+#echo "
+# $thought
+#  $thought
+#   $thought
+#    $thought" >> "$COW_FILE"
 
 b=$(failedlogs)
 failed="There were $b failed login attempts since last login"
 
-if [ -z $1 ];then
-  greet=$(shuf -n1 $MSG_FILE)
-  greet="$(figlet -d $FONT_DIR -f $gfont -w $(($COLUMNS-9)) "$greet" | sed "s=^=${esc}$gcolor=g"|sed 's=$=\\e[0m=g')"
+greet=$(shuf -n1 $MSG_FILE)
+greet="\n$(figlet -d $FONT_DIR -f $gfont -w $(($COLUMNS-9)) "$greet"|sed '/^\s*$/d' | sed "s=^=${esc}$gcolor=g"|sed 's=$=\\e[0m=g')\n"
 
-  infos="\
+infos="\
   #$(uname -snrvm|fold -w $(($COLUMNS-9)) )
-  $(echo $lastlog|fold -w $(($COLUMNS-9)))
-  $(echo $failed|fold -w $(($COLUMNS-9)))
-  $(hdd|fold -w $(($COLUMNS-9)))
-  "
+$(echo $lastlog|fold -w $(($COLUMNS-9)))
+$(echo $failed|fold -w $(($COLUMNS-9)))
+$(hdd|fold -w $(($COLUMNS-9)))
+"
 
-  msg="$greet
-  $infos
-  "
+msg="$greet
+$infos
+"
 
   
-fi
 
 msg_f="$(echo -e "$msg"|cowsay -n -f blank)"
-msg_h=$(( $(echo "$msg_f"|wc -l) + $nb_thoughts +2))
+#msg_h=$(( $(echo "$msg_f"|wc -l) + $nb_thoughts +2))
+msg_h=$(( $(echo "$msg_f"|wc -l) +2))
 msg_w=$(( $(echo "$msg_f"|head -1|wc -c)))
 
 
@@ -182,7 +194,11 @@ msg_w=$(( $(echo "$msg_f"|head -1|wc -c)))
 img_list=$(ls -1 $IMG_PTH)
 img_cnt=$(echo "${img_list}"|wc -l)
 img_arr=($(echo "$img_list" | tr '\n' ' '))
-chosen_img=${IMG_PTH}${img_arr[$(($RANDOM%$img_cnt))]}
+if [[ -n $1 ]];then
+  chosen_img=$1
+else
+  chosen_img=${IMG_PTH}${img_arr[$(($RANDOM%$img_cnt))]}
+fi
 
 ascii_h=$(( $LINES-$msg_h ))
 ascii=$(jp2a --height=$ascii_h $chosen_img)
@@ -196,11 +212,15 @@ if [ $ascii_w -gt $COLUMNS ];then
     lines="$(for i in $(seq $n); do echo  '\n';done)"
     #echo "$lines"|wc -l
     #echo "$ascii"|wc -l
-    ascii="${ascii}"
     #echo "$ascii"|wc -l
   fi
+  ascii_w=$(echo "$ascii"|head -1|wc -c)
 fi
-echo "$ascii"|sed '/^\s*$/d' >> "$COW_FILE"
+
+ascii="$(for a in $(seq $ascii_w); do echo -n ' ';done)\n${ascii}"
+ascii=$(echo -e "${ascii}")
+addthoughts $nb_thoughts
+echo "$ascii" >> "$COW_FILE"
 
 
 echo $footer >> "$COW_FILE"
