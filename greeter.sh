@@ -168,7 +168,11 @@ echo $header > "$COW_FILE"
 b=$(failedlogs)
 failed="There were $b failed login attempts since last login"
 
-greet=$(shuf -n1 $MSG_FILE)
+if [ -z $2 ];then
+  greet=$(shuf -n1 $MSG_FILE)
+else
+  greet="$2"
+fi
 greet="\n$(figlet -d $FONT_DIR -f $gfont -w $(($COLUMNS-9)) "$greet"|sed '/^\s*$/d' | sed "s=^=${esc}$gcolor=g"|sed 's=$=\\e[0m=g')\n"
 
 #$(uname -snrvm|fold -w $(($COLUMNS-9)) )
