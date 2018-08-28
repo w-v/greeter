@@ -1,7 +1,6 @@
 # greeter
 
-[!preview](http://w-v.fr/img/greeter.png)
-[!bugs](http://w-v.fr/img/bugs.jpg)
+![preview](http://w-v.fr/img/greeter.png) ![bugs](http://w-v.fr/img/bugs.jpg)
 
 ## features
 
