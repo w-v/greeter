@@ -1,5 +1,5 @@
 hey handsome
-i missed you
+missed you
 hey there
 hello there
 hi!
@@ -10,7 +10,7 @@ xoxoxo
 :P
 :D
 ;)
-we missed you
 hey!
 welcome
 wassup
+'sup doc
