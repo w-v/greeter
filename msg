@@ -1,5 +1,5 @@
 hey handsome
-i've missed you
+i missed you
 hey there
 hello there
 hi!
@@ -8,6 +8,9 @@ welcome back
 xoxoxo
 :)
 :P
-we've missed you
+:D
+;)
+we missed you
 hey!
 welcome
+wassup

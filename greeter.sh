@@ -171,12 +171,11 @@ failed="There were $b failed login attempts since last login"
 greet=$(shuf -n1 $MSG_FILE)
 greet="\n$(figlet -d $FONT_DIR -f $gfont -w $(($COLUMNS-9)) "$greet"|sed '/^\s*$/d' | sed "s=^=${esc}$gcolor=g"|sed 's=$=\\e[0m=g')\n"
 
+#$(uname -snrvm|fold -w $(($COLUMNS-9)) )
 infos="\
-  #$(uname -snrvm|fold -w $(($COLUMNS-9)) )
 $(echo $lastlog|fold -w $(($COLUMNS-9)))
 $(echo $failed|fold -w $(($COLUMNS-9)))
-$(hdd|fold -w $(($COLUMNS-9)))
-"
+$(hdd|fold -w $(($COLUMNS-9)))"
 
 msg="$greet
 $infos
@@ -191,6 +190,7 @@ msg_w=$(( $(echo "$msg_f"|head -1|wc -c)))
 
 
 
+# Choose a pic
 img_list=$(ls -1 $IMG_PTH)
 img_cnt=$(echo "${img_list}"|wc -l)
 img_arr=($(echo "$img_list" | tr '\n' ' '))
@@ -200,6 +200,7 @@ else
   chosen_img=${IMG_PTH}${img_arr[$(($RANDOM%$img_cnt))]}
 fi
 
+# display it correctly 
 ascii_h=$(( $LINES-$msg_h ))
 ascii=$(jp2a --height=$ascii_h $chosen_img)
 ascii_w=$(echo "$ascii"|head -1|wc -c)
@@ -230,6 +231,7 @@ final=$(echo -e "$msg"|cowsay -n -f greeter)
 
 #echo -n "$final"|sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
 
+# Bubble escape chars fix
 l=1;
 ifs="$IFS"
 IFS=$'\n'
