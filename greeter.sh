@@ -1,73 +1,7 @@
 #!/bin/bash
-Res="[0m"
 
-Default="[39m"
-Black="[30m"
-Red="[31m"
-Green="[32m"
-Yellow="[33m"
-Blue="[34m"
-Magenta="[35m"
-Cyan="[36m"
-Lgray="[37m"
-Dgray="[90m"
-Lred="[91m"
-Lgreen="[92m"
-Lyellow="[93m"
-Lblue="[94m"
-Lmagenta="[95m"
-Lcyan="[96m"
-White="[97m"
-BDefault="[49m"
-BBlack="[40m"
-BRed="[41m"
-BGreen="[42m"
-BYellow="[43m"
-BBlue="[44m"
-BMagenta="[45m"
-BCyan="[46m"
-BLgray="[47m"
-BDgray="[100m"
-BLred="[101m"
-BLgreen="[102m"
-BLyellow="[103m"
-BLblue="[104m"
-BLmagenta="[105m"
-BLcyan="[106m"
-BWhite="[107m"
-Bold="[1m"
-Dim="[2m"
-Underlined="[4m"
-Blink="[5m"
-Inverted="[7m"
-Hidden="[8m"
-
-colors="[31m
-[32m
-[33m
-[34m
-[35m
-[36m
-[37m
-[90m
-[91m
-[92m
-[93m
-[94m
-[95m
-[96m
-[97m"
-
-esc=$(printf '\033')
-
-P=$(pwd)
-IMG_PTH=$P'/img/'
-COW_PATH=$P'/cows/'
-COW_FILE="${COW_PATH}"'greeter.cow'
-MSG_FILE=$P'/msg'
-FONT_DIR=$P'/fonts/large'
-COLUMNS=$(tput cols)
-LINES=$(tput lines)
+source colors.sh
+source conf.sh
 
 # telling cowsay where to look for cows
 export COWPATH=${COW_PATH}
@@ -78,54 +12,25 @@ thought='$thoughts'
 
 nb_thoughts=4
 
-blanks=('' ' ' '  ' '   ' '    ' '     ' '      ' '       ' '        ' '         ' '          ' '           ' '            ' '             ' '             ' '              ')
+blanks=('' ' ' '  ' '   ' '    ' '     ' '      ' '       ' '        ' '         ' '          ' '           ' '            ' '             ' '              ' '               ' '                ' '                 ' '                  ' '                   ' '                    ' '                     ' '                      ' '                       ' '                        ' '                         ' '                          ' '                           ' '                            ' '                             ' '                              ' '                               ' '                                ' '                                 ' '                                  ' '                                   ' '                                    ' '                                     ' '                                      ' '                                       ' '                                        ')
 
+function makeblanks {
 
-function failedlogs {
-
-  # get last log timestamp
-  lastlog=$(lastlog -u $(whoami)|tail -1)
-  
-  # remove ip address if not tty
-  if [[ -n $(echo $lastlog|grep tty) ]]; then
-    lastlog=$(echo $lastlog|awk -F' ' '{print $5,$4,$8,$6}')
-  else
-    lastlog=$(echo $lastlog|awk -F' ' '{print $6,$5,$9,$7}')
-  fi
-
-  # format it for lastb
-  lastlog=$(date -d"$lastlog" +%Y%m%d%H%M%S)
-
-  # get the number of failed logins
-  # remove the trailing lines
-
-  nb_failed=$(( $(sudo lastb -s $lastlog|wc -l) -2))
-
-  if [[ $nb_failed -gt 0 ]];then
-    nb_failed="${esc}$Red$nb_failed"
-  else
-    nb_failed="${esc}$Green$nb_failed"
-  fi
-  echo "${esc}$Bold$nb_failed${esc}$Res"
+IFS=' '
+  for a in $(seq -s' ' 0 40);do
+    echo -n "'"
+    for b in $(seq -s' ' 1 $a);do
+      echo -n ' '
+    done
+    echo -n "'"
+    echo -n ' '
+  done
 }
+
 
 function escapediff {
+  echo $(echo -e "$1" | tr -d '\n'|sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|wc -c)
 
-  echo $(echo -n $1|sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|wc -c)
-
-}
-
-function hdd {
-  echo $(sudo /usr/sbin/hddtemp /dev/sd?|tr -d :)
-}
-
-function cpu {
-  echo a
-}
-
-function hw {
-  echo '\n'
-  paste <(cpu) <(hdd) --delimiters ''
 }
 
 function addthoughts {
@@ -144,19 +49,6 @@ gcolor=$(echo -e "$colors"|shuf -n1)
 gfont=$( ls $FONT_DIR| shuf -n1)
 
 
-lastlog=$(last|grep $(whoami)|head -2|tail -1)
-# remove ip address if not tty
-if [[ -n $(echo $lastlog|grep tty) ]]; then
-  port=$(echo $lastlog|awk '{print $2}')
-  #tm=$(echo $lastlog|tr -s ' '|cut -d' ' -f1-3)
-  tm=$(echo $lastlog|awk -F' ' '{print $3,$5,$6,$7,$8,$9,$10}')
-  lastlog="Last successful login was on $port on $tm"
-else
-  port=$(echo $lastlog|awk '{print $2}')
-  addr=$(echo $lastlog|awk '{print $3}')
-  tm=$(echo $lastlog|awk -F' ' '{print $4,$5,$6,$7,$8,$9,$10,$11}')
-  lastlog="Last successful login was from $addr on $port on $tm"
-fi
 
 echo $header > "$COW_FILE"
 #echo "
@@ -165,8 +57,6 @@ echo $header > "$COW_FILE"
 #   $thought
 #    $thought" >> "$COW_FILE"
 
-b=$(failedlogs)
-failed="There were $b failed login attempts since last login"
 
 if [ -z $2 ];then
   greet=$(shuf -n1 $MSG_FILE)
@@ -176,10 +66,8 @@ fi
 greet="\n$(figlet -d $FONT_DIR -f $gfont -w $(($COLUMNS-9)) "$greet"|sed '/^\s*$/d' | sed "s=^=${esc}$gcolor=g"|sed 's=$=\\e[0m=g')\n"
 
 #$(uname -snrvm|fold -w $(($COLUMNS-9)) )
-infos="\
-$(echo $lastlog|fold -w $(($COLUMNS-9)))
-$(echo $failed|fold -w $(($COLUMNS-9)))
-$(hdd|fold -w $(($COLUMNS-9)))"
+
+infos="$(./sysinfo.sh)"
 
 msg="$greet
 $infos
@@ -243,11 +131,19 @@ for a in $(echo "$final"|head -${msg_h})
 do
   match=$(echo "$a"|\grep -P '\e\[')
   if [[  -n  $match ]];then
-    #echo "$a"
     line_w=$(escapediff "$a")
+    #echo "$a"
+    #echo -n "$a"|wc -c
+    #echo -n "$a"|sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"|wc -c
+    #echo -n "$a"|sed -r 's/'$(echo -e "\033")'\[[0-9]{1,2}(;([0-9]{1,2})?)?[mK]//g'
+    #echo -n "$a"|sed "s/\x1B\[/e[/g"
     #echo $line_w $msg_w
+    #echo
     missing=$(( $msg_w-$line_w  ))
+    #echo $missing
+    #echo -n "$a"|sed -e "s/\([|/\\]\)$/${blanks[$missing]}\1/"
     final=$(echo -n "$final"|sed -e "${l}s/\([|/\\]\)$/${blanks[$missing]}\1/")
+    #echo a${blanks[$missing]}a
   fi
   l=$(($l+1))
 done
