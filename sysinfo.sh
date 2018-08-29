@@ -71,7 +71,8 @@ function color {
 
 
 function hdd {
-  temp=$(eval "$HDDTEMPCMD")"c"
+  echo "${esc}${Underlined}HDD              ${esc}${Res}"
+  temp=$(eval "$HDDTEMPCMD")"C"
   df=$(df -Ph)
   IFS=$'\n'
   for d in "$temp"; do
@@ -98,7 +99,18 @@ function hdd {
 }
 
 function cpu {
-  echo a
+  temp=$(eval $CPUTEMPCMD)
+  tempcol=${CPUTEMPCOLORS[$(color $temp ${CPUTEMPS})]}
+  temp=${esc}${Bold}${esc}${tempcol}${temp}"C"${esc}$Res
+
+  load=$(eval $CPULOADCMD)
+  IFS=' '
+  for l in $load;do
+    loadcol=${CPULOADCOLORS[$(color $l ${CPULOADS})]}
+    loadf="$loadf"${esc}${Bold}${esc}${loadcol}${l}"%"${esc}$Res" "
+  done
+
+  echo "$temp $loadf"
 }
 
 function hw {
